@@ -6,7 +6,6 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dest = path.resolve(__dirname, "../uploads/profile");
 
-    // pastikan folder ada
     if (!fs.existsSync(dest)) {
       fs.mkdirSync(dest, { recursive: true });
     }

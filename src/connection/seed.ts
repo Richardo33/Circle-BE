@@ -4,7 +4,6 @@ import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 
 async function main() {
-  // hash password
   const hashedPasswordJohan = await bcrypt.hash("123456", 10);
   const hashedPasswordTenma = await bcrypt.hash("123456", 10);
 
@@ -13,8 +12,8 @@ async function main() {
       username: "monster",
       full_name: "Johan Liebert",
       email: "johan@gmail.com",
-      password: hashedPasswordJohan, // pakai hashed password
-      photo_profile: "johan.png",
+      password: hashedPasswordJohan,
+      photo_profile: "http://localhost:3000/images/Tenma.jpg",
       bio: "Life is not fair. It never was, and it never will be.",
     },
   });
@@ -24,8 +23,8 @@ async function main() {
       username: "Dr. Tenma",
       full_name: "Kenzo Tenma",
       email: "tenma@gmail.com",
-      password: hashedPasswordTenma, // pakai hashed password
-      photo_profile: "tenma.png",
+      password: hashedPasswordTenma,
+      photo_profile: "http://localhost:3000/images/Johan.jpeg",
       bio: "Even if you can forget, you can't erase the past.",
     },
   });

@@ -12,7 +12,10 @@ router.post("/login", login);
 router.post("/logout", logout);
 
 router.get("/me", authenticate, (req, res) => {
-  res.json({ message: "Authenticated", user: (req as any).user });
+  return res.json({
+    success: true,
+    user: (req as any).user,
+  });
 });
 
 export default router;

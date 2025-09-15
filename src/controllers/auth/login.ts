@@ -9,22 +9,31 @@ export const login = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    if (!email || !password) {
+    if (!identifier || !password) {
       return res
         .status(400)
-        .json({ message: "Email dan password wajib diisi" });
+        .json({ message: "Email/Username dan password wajib diisi" });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: identifier }, { username: identifier }],
+      },
+    });
+
     if (!user) {
-      return res.status(401).json({ message: "Email atau password salah" });
+      return res
+        .status(401)
+        .json({ message: "Email/Username atau password salah" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Email atau password salah" });
+      return res
+        .status(401)
+        .json({ message: "Email/Username atau password salah" });
     }
 
     const token = signToken({ id: user.id, email: user.email });
