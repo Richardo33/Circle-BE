@@ -13,7 +13,7 @@ async function main() {
       full_name: "Johan Liebert",
       email: "johan@gmail.com",
       password: hashedPasswordJohan,
-      photo_profile: "http://localhost:3000/images/Tenma.jpg",
+      photo_profile: "/uploads/profile/Johan.jpeg",
       bio: "Life is not fair. It never was, and it never will be.",
     },
   });
@@ -24,7 +24,7 @@ async function main() {
       full_name: "Kenzo Tenma",
       email: "tenma@gmail.com",
       password: hashedPasswordTenma,
-      photo_profile: "http://localhost:3000/images/Johan.jpeg",
+      photo_profile: "/uploads/profile/Tenma.jpg",
       bio: "Even if you can forget, you can't erase the past.",
     },
   });
@@ -54,6 +54,14 @@ async function main() {
     },
   });
 
+  const thread3 = await prisma.thread.create({
+    data: {
+      content: "What’s important isn’t the truth, but what people believe.",
+      image: "/uploads/thread/Johan.jpeg",
+      created_by: johan.id,
+    },
+  });
+
   await prisma.reply.create({
     data: {
       user_id: tenma.id,
@@ -67,6 +75,14 @@ async function main() {
     data: {
       user_id: johan.id,
       thread_id: thread2.id,
+      created_by: johan.id,
+    },
+  });
+
+  await prisma.like.create({
+    data: {
+      user_id: johan.id,
+      thread_id: thread3.id,
       created_by: johan.id,
     },
   });

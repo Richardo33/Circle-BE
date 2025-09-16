@@ -2,14 +2,18 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
+const ensureDir = (dir: string) => {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+};
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dest = path.resolve(__dirname, "../uploads/profile");
+    let folder = "others";
+    if (file.fieldname === "profileImage") folder = "profile";
+    else if (file.fieldname === "image") folder = "thread";
 
-    if (!fs.existsSync(dest)) {
-      fs.mkdirSync(dest, { recursive: true });
-    }
-
+    const dest = path.resolve(__dirname, `../uploads/${folder}`);
+    ensureDir(dest);
     cb(null, dest);
   },
   filename: (req, file, cb) => {
@@ -19,5 +23,5 @@ const storage = multer.diskStorage({
 
 export const upload = multer({
   storage,
-  limits: { fileSize: 1 * 1024 * 1024 }, // max 1MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // max 5MB
 });

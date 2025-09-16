@@ -28,6 +28,8 @@ export const register = async (
       ? `/uploads/profile/${req.file.filename}`
       : null;
 
+    console.log(">>> req.file:", req.file);
+
     const username = email.split("@")[0];
 
     const user = await prisma.user.create({
@@ -46,10 +48,10 @@ export const register = async (
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: 1000 * 60 * 60 * 24, // 1 hari
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       code: 200,
       status: "success",
       message: "Registrasi berhasil. Akun berhasil dibuat.",
@@ -57,6 +59,7 @@ export const register = async (
         user_id: user.id,
         name: user.full_name,
         email: user.email,
+        photo_profile: user.photo_profile,
         token,
       },
     });
