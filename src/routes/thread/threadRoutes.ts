@@ -7,11 +7,6 @@ import { upload } from "../../utils/multer";
 const router = express.Router();
 
 router.get("/threads", authenticate, getThreads);
-router.post(
-  "/threads",
-  authenticate,
-  upload.single("image"), // field "image" di form-data
-  createThread
-);
+router.post("/threads", authenticate, upload.single("image"), createThread);
 
 export default router;
