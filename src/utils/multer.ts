@@ -9,8 +9,10 @@ const ensureDir = (dir: string) => {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let folder = "others";
+
     if (file.fieldname === "profileImage") folder = "profile";
     else if (file.fieldname === "image") folder = "thread";
+    else if (file.fieldname === "replyImage") folder = "reply";
 
     const dest = path.resolve(__dirname, `../uploads/${folder}`);
     ensureDir(dest);
@@ -23,5 +25,5 @@ const storage = multer.diskStorage({
 
 export const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // max 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
 });

@@ -49,7 +49,7 @@ model Thread {
   updated_at        DateTime? @updatedAt @db.Timestamptz(6)
   updated_by        String?   @db.Uuid
 
-  user    User   @relation(fields: [created_by], references: [id])
+  user    User     @relation(fields: [created_by], references: [id], onDelete: Cascade)
   replies Reply[]
   likes   Like[]
 }
@@ -65,7 +65,7 @@ model Reply {
   updated_at DateTime? @updatedAt @db.Timestamptz(6)
   updated_by String?   @db.Uuid
 
-  user   User   @relation(fields: [user_id], references: [id])
+  user   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   thread Thread @relation(fields: [thread_id], references: [id])
 }
 
@@ -78,6 +78,8 @@ model Like {
   updated_at DateTime? @updatedAt @db.Timestamptz(6)
   updated_by String?   @db.Uuid
 
-  user   User   @relation(fields: [user_id], references: [id])
+  user   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   thread Thread @relation(fields: [thread_id], references: [id])
+
+  @@unique([user_id, thread_id])
 }

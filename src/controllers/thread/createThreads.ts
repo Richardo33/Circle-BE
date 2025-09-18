@@ -9,13 +9,17 @@ export const createThread = async (
 ) => {
   try {
     const user = req.user;
-    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
     const { content } = req.body;
-    if (!content && !req.file)
+
+    if (!content && !req.file) {
       return res
         .status(400)
         .json({ message: "Content atau image wajib diisi" });
+    }
 
     const image_url = req.file ? `/uploads/thread/${req.file.filename}` : null;
 
@@ -33,9 +37,9 @@ export const createThread = async (
       image: image_url,
       user: {
         id: user.id,
-        username: user.username || "anonymous",
+        username: user.username ?? "anonymous",
         name: user.full_name,
-        profile_picture: user.avatar || null,
+        profile_picture: user.avatar ?? null,
       },
       created_at: thread.created_at,
       likes: 0,
@@ -43,11 +47,11 @@ export const createThread = async (
       isLiked: false,
     };
 
-    // Emit ke semua client yang terkoneksi
+    // Broadcast ke semua client socket.io
     io.emit("new-thread", threadData);
 
-    return res.status(200).json({
-      code: 200,
+    return res.status(201).json({
+      code: 201,
       status: "success",
       message: "Thread berhasil diposting.",
       data: { tweet: threadData },
