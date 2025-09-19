@@ -11,7 +11,11 @@ export const likeThread = async (
     const userId = (req as any).user?.id;
 
     if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({
+        code: 401,
+        status: "error",
+        message: "Unauthorized",
+      });
     }
 
     const existingLike = await prisma.like.findFirst({
@@ -19,7 +23,6 @@ export const likeThread = async (
     });
 
     if (existingLike) {
-      // Unlike
       await prisma.like.delete({ where: { id: existingLike.id } });
 
       const likeCount = await prisma.like.count({
@@ -31,10 +34,9 @@ export const likeThread = async (
         tweet_id: threadId,
         user_id: userId,
         liked: false,
-        likes: likeCount, // ⬅ kirim jumlah terbaru
+        likes: likeCount,
       });
     } else {
-      // Like
       const like = await prisma.like.create({
         data: {
           thread_id: threadId,
@@ -52,7 +54,7 @@ export const likeThread = async (
         tweet_id: like.thread_id,
         user_id: like.user_id,
         liked: true,
-        likes: likeCount, // ⬅ kirim jumlah terbaru
+        likes: likeCount,
       });
     }
   } catch (err) {

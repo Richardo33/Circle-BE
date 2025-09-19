@@ -23,17 +23,16 @@ const threadWithRelations = Prisma.validator<Prisma.ThreadInclude>()({
       },
     },
     orderBy: {
-      created_at: "asc",
+      created_at: "desc",
     },
   },
   likes: {
     select: {
-      user_id: true, // ambil userId aja
+      user_id: true,
     },
   },
 });
 
-// bikin type hasil query
 type ThreadWithRelations = Prisma.ThreadGetPayload<{
   include: typeof threadWithRelations;
 }>;

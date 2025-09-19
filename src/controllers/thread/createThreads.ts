@@ -47,7 +47,6 @@ export const createThread = async (
       isLiked: false,
     };
 
-    // Broadcast ke semua client socket.io
     io.emit("new-thread", threadData);
 
     return res.status(201).json({
