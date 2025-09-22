@@ -39,7 +39,9 @@ export const createThread = async (
         id: user.id,
         username: user.username ?? "anonymous",
         name: user.full_name,
-        profile_picture: user.avatar ?? null,
+        profile_picture: user.photo_profile ?? null,
+        backgroundPhoto: user.backgroundPhoto ?? null,
+        bio: user.bio ?? null,
       },
       created_at: thread.created_at,
       likes: 0,
@@ -53,7 +55,7 @@ export const createThread = async (
       code: 201,
       status: "success",
       message: "Thread berhasil diposting.",
-      data: { tweet: threadData },
+      data: { thread: threadData },
     });
   } catch (err) {
     next(err);

@@ -1,4 +1,4 @@
-// middlewares/authenticate.ts
+// middleware/authenticate.ts
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt";
 import { prisma } from "../connection/client";
@@ -9,15 +9,21 @@ declare global {
       user?: {
         id: string;
         email: string;
-        username?: string;
+        username: string;
         full_name: string;
-        avatar?: string | null;
+        photo_profile?: string | null;
+        backgroundPhoto?: string | null;
+        bio?: string | null;
       };
     }
   }
 }
 
-export function authenticate(req: Request, res: Response, next: NextFunction) {
+export async function authenticate(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const token = req.cookies?.user_token;
 
   if (!token) {
@@ -27,32 +33,25 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
   }
 
   try {
-    // decode token untuk dapat user id
     const decoded = verifyToken(token) as { id: string; email: string };
 
-    // ambil user lengkap dari database
-    prisma.user
-      .findUnique({ where: { id: decoded.id } })
-      .then((user) => {
-        if (!user) {
-          return res.status(401).json({ message: "User tidak ditemukan" });
-        }
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
 
-        // assign lengkap ke req.user
-        req.user = {
-          id: user.id,
-          email: user.email,
-          username: user.username || undefined,
-          full_name: user.full_name,
-          avatar: user.photo_profile || null,
-        };
+    if (!user) {
+      return res.status(401).json({ message: "User tidak ditemukan" });
+    }
 
-        next();
-      })
-      .catch((err) => {
-        console.error(err);
-        return res.status(500).json({ message: "Internal server error" });
-      });
+    req.user = {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      full_name: user.full_name,
+      photo_profile: user.photo_profile ?? null,
+      backgroundPhoto: user.backgroundPhoto ?? null,
+      bio: user.bio ?? null,
+    };
+
+    next();
   } catch (err) {
     return res.status(401).json({ message: "Token tidak valid atau expired" });
   }

@@ -13,6 +13,7 @@ const storage = multer.diskStorage({
     if (file.fieldname === "profileImage") folder = "profile";
     else if (file.fieldname === "image") folder = "thread";
     else if (file.fieldname === "replyImage") folder = "reply";
+    else if (file.fieldname === "backgroundPhoto") folder = "background";
 
     const dest = path.resolve(__dirname, `../uploads/${folder}`);
     ensureDir(dest);
