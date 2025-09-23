@@ -1,4 +1,3 @@
-// middleware/authenticate.ts
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt";
 import { prisma } from "../connection/client";

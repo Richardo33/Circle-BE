@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../../connection/client";
 
-// Custom Request type agar TypeScript mengenali req.user
 interface AuthRequest extends Request {
   user?: {
     id: string;
@@ -14,7 +13,6 @@ interface AuthRequest extends Request {
   };
 }
 
-// Controller untuk mendapatkan followers / following
 export const getFollows = async (req: AuthRequest, res: Response) => {
   try {
     const type = req.query.type as string;
@@ -43,7 +41,6 @@ export const getFollows = async (req: AuthRequest, res: Response) => {
         },
       });
 
-      // cek apakah logged-in user follow balik
       const followersWithIsFollowing = await Promise.all(
         followers.map(async (f) => {
           const followBack = await prisma.following.findUnique({
@@ -85,7 +82,6 @@ export const getFollows = async (req: AuthRequest, res: Response) => {
         },
       });
 
-      // semua following pasti isFollowing = true
       const followingWithFlag = following.map((f) => ({
         id: f.following.id,
         username: f.following.username,
@@ -114,7 +110,6 @@ export const getFollows = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Controller untuk follow / unfollow user
 export const followUser = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -134,7 +129,6 @@ export const followUser = async (req: AuthRequest, res: Response) => {
     });
 
     if (existing) {
-      // jika sudah follow, hapus (unfollow)
       await prisma.following.delete({
         where: {
           follower_id_following_id: {
@@ -149,7 +143,6 @@ export const followUser = async (req: AuthRequest, res: Response) => {
         message: "Unfollowed successfully",
       });
     } else {
-      // jika belum follow, create follow
       await prisma.following.create({
         data: { follower_id: userId, following_id: targetId },
       });
