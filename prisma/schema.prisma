@@ -38,6 +38,8 @@ model Following {
 
   following User @relation("FollowingUser", fields: [following_id], references: [id])
   follower  User @relation("FollowerUser", fields: [follower_id], references: [id])
+
+  @@unique([follower_id, following_id])
 }
 
 model Thread {

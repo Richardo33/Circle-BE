@@ -5,6 +5,8 @@ import authRouter from "./routes/auth/authRoutes";
 import threadRouter from "./routes/thread/threadRoutes";
 import replyRoutes from "./routes/reply/replyRoutes";
 import likeRoutes from "./routes/like/likeRoutes";
+import followRoutes from "./routes/follow/followRoutes";
+import searcRoutes from "./routes/search/searchRoutes";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
@@ -26,6 +28,8 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/thread", threadRouter);
 app.use("/api/v1/reply", replyRoutes);
 app.use("/api/v1/like", likeRoutes);
+app.use("/api/v1/follows", followRoutes);
+app.use("/api/v1/search", searcRoutes);
 
 const server = createServer(app);
 

@@ -3,7 +3,7 @@ import { prisma } from "../../connection/client";
 
 export const getThreadsUser = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.id;
+    const userId = (req as any).user?.id; // pakai `as any` biar TS aman
     if (!userId) {
       return res
         .status(401)
@@ -43,9 +43,12 @@ export const getThreadsUser = async (req: Request, res: Response) => {
       },
     }));
 
-    return res
-      .status(200)
-      .json({ code: 200, status: "success", data: formattedThreads });
+    return res.status(200).json({
+      code: 200,
+      status: "success",
+      postCount: formattedThreads.length, // ✅ tambahan di sini
+      data: formattedThreads, // tetap array biar FE lama aman
+    });
   } catch (err) {
     console.error(err);
     return res
