@@ -40,7 +40,7 @@ export const searchUsers = async (req: AuthenticatedRequest, res: Response) => {
         full_name: true,
         photo_profile: true,
       },
-      take: 20,
+      take: 7,
     });
 
     const usersWithFollow = await Promise.all(
@@ -61,6 +61,13 @@ export const searchUsers = async (req: AuthenticatedRequest, res: Response) => {
         };
       })
     );
+
+    const sortedUsers = usersWithFollow.sort((a, b) => {
+      if (a.isFollowing === b.isFollowing) {
+        return 0;
+      }
+      return a.isFollowing ? -1 : 1;
+    });
 
     return res.status(200).json({
       code: 200,

@@ -1,17 +1,31 @@
 import { Request, Response } from "express";
 import { prisma } from "../../connection/client";
 
-export const getThreadsUser = async (req: Request, res: Response) => {
+export const getThreadsByUsername = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ code: 401, status: "error", message: "Unauthorized" });
+    const { username } = req.params;
+    if (!username) {
+      return res.status(400).json({
+        code: 400,
+        status: "error",
+        message: "Username is required",
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { username },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        code: 404,
+        status: "error",
+        message: "User not found",
+      });
     }
 
     const threads = await prisma.thread.findMany({
-      where: { created_by: userId },
+      where: { created_by: user.id },
       orderBy: { created_at: "desc" },
       include: {
         user: {
@@ -34,7 +48,9 @@ export const getThreadsUser = async (req: Request, res: Response) => {
       created_at: thread.created_at,
       likes: thread.likes.length,
       reply: thread.replies.length,
-      isLiked: thread.likes.some((like) => like.user_id === userId),
+      isLiked: thread.likes.some(
+        (like) => like.user_id === (req as any).user?.id
+      ),
       user: {
         id: thread.user.id,
         username: thread.user.username,
@@ -51,8 +67,10 @@ export const getThreadsUser = async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error(err);
-    return res
-      .status(500)
-      .json({ code: 500, status: "error", message: "Internal Server Error" });
+    return res.status(500).json({
+      code: 500,
+      status: "error",
+      message: "Internal Server Error",
+    });
   }
 };

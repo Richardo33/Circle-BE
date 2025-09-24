@@ -159,3 +159,87 @@ export const followUser = async (req: AuthRequest, res: Response) => {
       .json({ code: 500, status: "error", message: "Internal Server Error" });
   }
 };
+
+export const getFollowsByUserId = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const type = req.query.type as string;
+
+    if (!userId || !type) {
+      return res.status(400).json({
+        code: 400,
+        status: "error",
+        message: "Missing userId or type query parameter",
+      });
+    }
+
+    if (type === "followers") {
+      const followers = await prisma.following.findMany({
+        where: { following_id: userId },
+        include: {
+          follower: {
+            select: {
+              id: true,
+              username: true,
+              full_name: true,
+              photo_profile: true,
+            },
+          },
+        },
+      });
+
+      const followersFormatted = followers.map((f) => ({
+        id: f.follower.id,
+        username: f.follower.username,
+        full_name: f.follower.full_name,
+        profile_picture: f.follower.photo_profile ?? null,
+      }));
+
+      return res.status(200).json({
+        code: 200,
+        status: "success",
+        data: followersFormatted,
+      });
+    }
+
+    if (type === "following") {
+      const following = await prisma.following.findMany({
+        where: { follower_id: userId },
+        include: {
+          following: {
+            select: {
+              id: true,
+              username: true,
+              full_name: true,
+              photo_profile: true,
+            },
+          },
+        },
+      });
+
+      const followingFormatted = following.map((f) => ({
+        id: f.following.id,
+        username: f.following.username,
+        full_name: f.following.full_name,
+        profile_picture: f.following.photo_profile ?? null,
+      }));
+
+      return res.status(200).json({
+        code: 200,
+        status: "success",
+        data: followingFormatted,
+      });
+    }
+
+    return res.status(400).json({
+      code: 400,
+      status: "error",
+      message: "Invalid type query parameter",
+    });
+  } catch (err) {
+    console.error("Error getFollowsByUserId:", err);
+    return res
+      .status(500)
+      .json({ code: 500, status: "error", message: "Internal Server Error" });
+  }
+};
