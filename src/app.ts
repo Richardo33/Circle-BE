@@ -10,6 +10,7 @@ import searcRoutes from "./routes/search/searchRoutes";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
+import { setupSwagger } from "./server/swagger";
 
 const app = express();
 
@@ -30,6 +31,8 @@ app.use("/api/v1/reply", replyRoutes);
 app.use("/api/v1/like", likeRoutes);
 app.use("/api/v1/follows", followRoutes);
 app.use("/api/v1/search", searcRoutes);
+
+setupSwagger(app);
 
 const server = createServer(app);
 
