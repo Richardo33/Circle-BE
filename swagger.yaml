@@ -1,0 +1,1405 @@
+openapi: 3.0.0
+info:
+  title: Circle App API
+  version: 1.0.0
+  description: API documentation for Circle App
+
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /api/v1/auth/register:
+    post:
+      summary: Register a new user
+      description: Create a new user account with optional profile image upload.
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Unique username for the user
+                email:
+                  type: string
+                  description: User's email address
+                password:
+                  type: string
+                  description: User's password
+                full_name:
+                  type: string
+                  description: Full name of the user
+                profileImage:
+                  type: string
+                  format: binary
+                  description: Optional profile image
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  full_name:
+                    type: string
+        "400":
+          description: Bad request (validation error or missing fields)
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: User login
+      description: Login menggunakan email atau username dan password. Akan mengembalikan token dan data user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                identifier:
+                  type: string
+                  description: Email atau username user
+                  example: Naruto
+                password:
+                  type: string
+                  description: Password user
+                  example: 123456
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: number
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Login successful.
+                  data:
+                    type: object
+                    properties:
+                      user_id:
+                        type: string
+                        example: 49aa03cc-e9d3-409d-b330-60847c6959ad
+                      username:
+                        type: string
+                        example: Naruto
+                      name:
+                        type: string
+                        example: Naruto Uzumaki
+                      email:
+                        type: string
+                        example: naruto@gmail.com
+                      avatar:
+                        type: string
+                        nullable: true
+                        example: /uploads/profile/1758088163575-Naruto.jpg
+                      token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "400":
+          description: Bad request jika identifier atau password tidak diisi
+        "401":
+          description: Unauthorized jika email/username atau password salah
+
+  /api/v1/auth/logout:
+    post:
+      summary: Logout user
+      description: Menghapus cookie serta membuat user keluar dari aplikasi
+      tags:
+        - Auth
+      responses:
+        "200":
+          description: Logout berhasil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logout berhasil
+
+  /api/v1/auth/me:
+    get:
+      summary: Get current user profile
+      description: Mengambil data profile user yang sedang login beserta thread-nya untuk ditampilkan di halaman profil.
+      tags:
+        - Auth
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Profile user berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: number
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 49aa03cc-e9d3-409d-b330-60847c6959ad
+                      email:
+                        type: string
+                        example: naruto@example.com
+                      username:
+                        type: string
+                        example: Naruto
+                      name:
+                        type: string
+                        example: Naruto Uzumaki
+                      bio:
+                        type: string
+                        nullable: true
+                        example: Dattebayo
+                      profile_picture:
+                        type: string
+                        nullable: true
+                        example: /uploads/profile/1758088163575-Naruto.jpg
+                      backgroundPhoto:
+                        type: string
+                        nullable: true
+                        example: /uploads/background/1234.jpg
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: 2025-09-25T07:12:34.000Z
+                      threads:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: f2a9d1c5-9b3d-4e5b-abc1-1234567890ab
+                            content:
+                              type: string
+                              example: Ini thread pertama saya
+                            image:
+                              type: string
+                              nullable: true
+                              example: /uploads/thread/1234.jpg
+                            created_at:
+                              type: string
+                              format: date-time
+                              example: 2025-09-25T08:00:00.000Z
+        "401":
+          description: Unauthorized, token tidak valid atau tidak ditemukan
+        "404":
+          description: User tidak ditemukan
+
+    put:
+      summary: Update current user profile
+      description: Update user profile include username, email, full_name, bio, profile image, and background photo
+      tags:
+        - Auth
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                  description: Nama lengkap user
+                  example: Naruto Uzumaki
+                username:
+                  type: string
+                  description: Username user
+                  example: Naruto
+                email:
+                  type: string
+                  description: Email user
+                  example: naruto@konoha.com
+                bio:
+                  type: string
+                  description: Bio user
+                  example: Nanadaime
+                profileImage:
+                  type: string
+                  format: binary
+                  description: Foto profile baru
+                backgroundPhoto:
+                  type: string
+                  format: binary
+                  description: Foto background baru
+      responses:
+        "200":
+          description: Profile berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: number
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Profile updated successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 49aa03cc-e9d3-409d-b330-60847c6959ad
+                      username:
+                        type: string
+                        example: Naruto
+                      name:
+                        type: string
+                        example: Naruto Uzumaki
+                      email:
+                        type: string
+                        example: naruto@konoha.com
+                      bio:
+                        type: string
+                        nullable: true
+                        example: Ninja dari Konoha
+                      profile_picture:
+                        type: string
+                        nullable: true
+                        example: /uploads/profile/1758088163575-Naruto.jpg
+                      backgroundPhoto:
+                        type: string
+                        nullable: true
+                        example: /uploads/background/1234.jpg
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: 2025-09-25T10:00:00.000Z
+        "401":
+          description: Unauthorized, token tidak valid atau tidak ditemukan
+        "404":
+          description: User tidak ditemukan
+        "500":
+          description: Internal server error
+
+  /api/v1/like/{threadId}:
+    post:
+      tags:
+        - Likes
+      summary: Like atau Unlike thread
+      description: Endpoint ini digunakan untuk melakukan like pada thread.
+        Jika user sudah like sebelumnya, maka request ini akan menghapus like (unlike).
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: threadId
+          required: true
+          schema:
+            type: string
+          description: ID thread yang akan di-like/unlike
+      responses:
+        "200":
+          description: Berhasil melakukan like atau unlike
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Thread liked successfully
+                  thread_id:
+                    type: string
+                    example: thread-123
+                  user_id:
+                    type: string
+                    example: user-456
+                  liked:
+                    type: boolean
+                    example: true
+                  likes:
+                    type: integer
+                    example: 12
+        "401":
+          description: Unauthorized (belum login)
+        "500":
+          description: Internal Server Error
+
+  /api/v1/thread/threads:
+    get:
+      tags:
+        - Threads
+      summary: Get all threads
+      description: Mengambil semua thread dari semua user, urut berdasarkan thread terbaru.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Daftar thread berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Get Data Thread Successfully
+                  data:
+                    type: object
+                    properties:
+                      threads:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: "01be3d4e-760b-4ba4-91ad-1837942867f5"
+                            content:
+                              type: string
+                              example: "Ini adalah postingan thread pertama saya!"
+                            image:
+                              type: string
+                              nullable: true
+                              example: "/uploads/threads/image1.png"
+                            user:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: "3947bf9e-bf71-4462-a0e9-edb1973cc95b"
+                                username:
+                                  type: string
+                                  example: "monster"
+                                name:
+                                  type: string
+                                  example: "Johan Liebert"
+                                profile_picture:
+                                  type: string
+                                  nullable: true
+                                  example: "/uploads/profile/liebert.png"
+                            created_at:
+                              type: string
+                              format: date-time
+                              example: "2025-09-25T10:20:30.000Z"
+                            likes:
+                              type: integer
+                              example: 5
+                            reply:
+                              type: integer
+                              example: 2
+                            isLiked:
+                              type: boolean
+                              example: true
+        "401":
+          description: Unauthorized, user belum login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unauthorized, token tidak ditemukan
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+
+    post:
+      tags:
+        - Threads
+      summary: Create a new thread
+      description: Create new thread with text content or image
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: Isi thread (boleh kosong jika ada gambar).
+                  example: "Halo ini thread pertama saya!"
+                image:
+                  type: string
+                  format: binary
+                  description: Gambar yang diupload (opsional).
+      responses:
+        "201":
+          description: Thread berhasil diposting
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 201
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Thread berhasil diposting.
+                  data:
+                    type: object
+                    properties:
+                      thread:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: "thread-123"
+                          content:
+                            type: string
+                            example: "Halo ini thread pertama saya!"
+                          image:
+                            type: string
+                            nullable: true
+                            example: "/uploads/thread/thread1.png"
+                          user:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: "user-123"
+                              username:
+                                type: string
+                                example: "johndoe"
+                              name:
+                                type: string
+                                example: "John Doe"
+                              profile_picture:
+                                type: string
+                                nullable: true
+                                example: "/uploads/profile/johndoe.png"
+                              backgroundPhoto:
+                                type: string
+                                nullable: true
+                                example: "/uploads/background/bg1.png"
+                              bio:
+                                type: string
+                                nullable: true
+                                example: "Software Engineer & Coffee Lover"
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: "2025-09-25T10:30:00.000Z"
+                          likes:
+                            type: integer
+                            example: 0
+                          reply:
+                            type: integer
+                            example: 0
+                          isLiked:
+                            type: boolean
+                            example: false
+        "400": descripti
+
+  /api/v1/thread/{id}:
+    get:
+      tags:
+        - Threads
+      summary: Get thread by ID
+      description: Get detail for one thread by ID, include user, likes, and replies
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID thread yang ingin diambil
+      responses:
+        "200":
+          description: Thread berhasil diambil
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      thread:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: "thread-123"
+                          content:
+                            type: string
+                            example: "Isi thread di sini"
+                          image:
+                            type: string
+                            nullable: true
+                            example: "/uploads/thread/thread1.png"
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: "2025-09-25T12:00:00.000Z"
+                          likes:
+                            type: integer
+                            example: 10
+                          reply:
+                            type: integer
+                            example: 3
+                          isLiked:
+                            type: boolean
+                            example: true
+                          user:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: "user-123"
+                              username:
+                                type: string
+                                example: "johndoe"
+                              name:
+                                type: string
+                                example: "John Doe"
+                              profile_picture:
+                                type: string
+                                nullable: true
+                                example: "/uploads/profile/johndoe.png"
+                              backgroundPhoto:
+                                type: string
+                                nullable: true
+                                example: "/uploads/background/bg1.png"
+                              bio:
+                                type: string
+                                nullable: true
+                                example: "Coffee Lover & Developer"
+                          replies:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: "reply-456"
+                                content:
+                                  type: string
+                                  example: "Setuju banget sama ini!"
+                                created_at:
+                                  type: string
+                                  format: date-time
+                                  example: "2025-09-25T13:00:00.000Z"
+                                user:
+                                  type: object
+                                  properties:
+                                    id:
+                                      type: string
+                                      example: "user-456"
+                                    username:
+                                      type: string
+                                      example: "sakura"
+                                    name:
+                                      type: string
+                                      example: "Sakura Haruno"
+                                    profile_picture:
+                                      type: string
+                                      nullable: true
+                                      example: "/uploads/profile/sakura.png"
+        "401":
+          description: Unauthorized, user belum login
+        "404":
+          description: Thread not found
+        "500":
+          description: Internal Server Error
+
+  /api/v1/thread/threads/me:
+    get:
+      tags:
+        - Threads
+      summary: Get current user's threads
+      description: Ambil semua thread yang diposting oleh user yang sedang login.
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Daftar thread milik user login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  postCount:
+                    type: integer
+                    example: 5
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "thread-123"
+                        content:
+                          type: string
+                          example: "Thread saya sendiri"
+                        image:
+                          type: string
+                          nullable: true
+                          example: "/uploads/thread/mythread.png"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2025-09-25T12:00:00.000Z"
+                        likes:
+                          type: integer
+                          example: 8
+                        reply:
+                          type: integer
+                          example: 2
+                        isLiked:
+                          type: boolean
+                          example: true
+                        user:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: "user-789"
+                            username:
+                              type: string
+                              example: "johndoe"
+                            name:
+                              type: string
+                              example: "John Doe"
+                            profile_picture:
+                              type: string
+                              nullable: true
+                              example: "/uploads/profile/johndoe.png"
+        "401":
+          description: Unauthorized, user belum login
+        "500":
+          description: Internal Server Error
+
+  /api/v1/thread/threads/{username}:
+    get:
+      tags:
+        - Threads
+      summary: Get user's threads by username
+      description: Ambil semua thread berdasarkan username tertentu.
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: Username dari user
+      responses:
+        "200":
+          description: Daftar thread dari user dengan username tertentu
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  postCount:
+                    type: integer
+                    example: 3
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "thread-456"
+                        content:
+                          type: string
+                          example: "Postingan user tertentu"
+                        image:
+                          type: string
+                          nullable: true
+                          example: "/uploads/thread/post.png"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2025-09-25T10:00:00.000Z"
+                        likes:
+                          type: integer
+                          example: 12
+                        reply:
+                          type: integer
+                          example: 4
+                        isLiked:
+                          type: boolean
+                          example: false
+                        user:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: "user-123"
+                            username:
+                              type: string
+                              example: "monster"
+                            name:
+                              type: string
+                              example: "Monster User"
+                            profile_picture:
+                              type: string
+                              nullable: true
+                              example: "/uploads/profile/monster.png"
+        "400":
+          description: Username tidak diberikan
+        "404":
+          description: User tidak ditemukan
+        "500":
+          description: Internal Server Error
+
+  /api/v1/thread/threads/stats/{userId}:
+    get:
+      tags:
+        - Threads
+      summary: Get threads by user ID
+      description: Ambil semua thread berdasarkan userId (beserta replies dan likes).
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: ID user
+      responses:
+        "200":
+          description: Daftar thread berdasarkan userId
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "thread-789"
+                        content:
+                          type: string
+                          example: "Thread milik userId tertentu"
+                        image:
+                          type: string
+                          nullable: true
+                          example: "/uploads/thread/thread.png"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "2025-09-25T10:00:00.000Z"
+                        created_by:
+                          type: string
+                          example: "user-123"
+                        replies:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: "reply-1"
+                              content:
+                                type: string
+                                example: "Reply ke thread ini"
+                        likes:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                example: "like-1"
+                              user_id:
+                                type: string
+                                example: "user-999"
+        "500":
+          description: Internal Server Error
+
+  /api/v1/reply/{threadId}:
+    post:
+      tags:
+        - Replies
+      summary: Create a reply on a thread
+      description: Memberikan comment/reply pada thread tertentu. Bisa hanya teks, hanya gambar, atau keduanya.
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: threadId
+          required: true
+          schema:
+            type: string
+          description: ID dari thread yang ingin dibalas
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: Isi reply
+                replyImage:
+                  type: string
+                  format: binary
+                  description: Gambar opsional untuk reply
+      responses:
+        "200":
+          description: Reply berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Reply created successfully
+                  data:
+                    type: object
+                    properties:
+                      reply:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: "reply-123"
+                          user_id:
+                            type: string
+                            example: "user-456"
+                          content:
+                            type: string
+                            example: "Mantap sekali thread ini!"
+                          image_url:
+                            type: string
+                            nullable: true
+                            example: "/uploads/replies/reply1.png"
+                          timestamp:
+                            type: string
+                            format: date-time
+                            example: "2025-09-25T14:00:00.000Z"
+        "401":
+          description: Unauthorized (belum login)
+        "500":
+          description: Invalid Thread content atau Internal Server Error
+
+  /api/v1/follows:
+    get:
+      summary: Get followers or following list
+      description: |
+        Mengambil daftar followers (orang yang mengikuti user login) atau following (orang yang diikuti user login).
+        Wajib menambahkan query parameter type dengan nilai followers atau following.
+      tags:
+        - Follow
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: type
+          required: true
+          schema:
+            type: string
+            enum: [followers, following]
+          description: Tentukan apakah ingin mengambil followers atau following
+          example: following
+      responses:
+        "200":
+          description: Daftar followers atau following berhasil didapatkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 49aa03cc-e9d3-409d-b330-60847c6959ad
+                        username:
+                          type: string
+                          example: sasuke
+                        full_name:
+                          type: string
+                          example: Sasuke Uchiha
+                        profile_picture:
+                          type: string
+                          nullable: true
+                          example: /uploads/profile/1758088163575-sasuke.jpg
+                        isFollowing:
+                          type: boolean
+                          description: Apakah user login sudah follow user ini
+                          example: true
+        "400":
+          description: Missing atau invalid type query parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 400
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Invalid type query parameter
+        "401":
+          description: Unauthorized, user belum login
+        "500":
+          description: Internal server error
+
+    post:
+      summary: Follow or unfollow a user
+      description: |
+        Endpoint ini digunakan untuk follow atau unfollow user lain.
+        Jika user sudah di-follow, maka request berikutnya akan otomatis **unfollow**.
+      tags:
+        - Follow
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - targetId
+              properties:
+                targetId:
+                  type: string
+                  description: ID user yang ingin di-follow atau di-unfollow
+                  example: 49aa03cc-e9d3-409d-b330-60847c6959ad
+      responses:
+        "200":
+          description: Followed atau unfollowed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Followed successfully
+        "400":
+          description: Missing user Id atau targetId
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 400
+                  message:
+                    type: string
+                    example: Missing user Id
+        "401":
+          description: Unauthorized, user belum login
+        "500":
+          description: Internal server error
+
+  /api/v1/follows/{userId}:
+    get:
+      summary: Get followers or following of a user
+      description: |
+        Mengambil daftar followers (orang yang mengikuti user tertentu) atau following (orang yang diikuti user tertentu).
+        Berguna untuk melihat stats following dan followers dari user lain.
+        Wajib menambahkan query parameter `type` dengan nilai `followers` atau `following`.
+      tags:
+        - Follow
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: ID user yang ingin dilihat followers/following-nya
+          example: f4691bb0-4799-4005-b7d7-6f0d6e00d490
+        - in: query
+          name: type
+          required: true
+          schema:
+            type: string
+            enum: [followers, following]
+          description: Tentukan apakah ingin mengambil daftar followers atau following
+          example: followers
+      responses:
+        "200":
+          description: Daftar followers atau following berhasil didapatkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 49aa03cc-e9d3-409d-b330-60847c6959ad
+                        username:
+                          type: string
+                          example: sakura
+                        full_name:
+                          type: string
+                          example: Sakura Haruno
+                        profile_picture:
+                          type: string
+                          nullable: true
+                          example: /uploads/profile/1758088163575-sakura.jpg
+        "400":
+          description: Missing userId atau type query parameter / Invalid type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 400
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Invalid type query parameter
+        "401":
+          description: Unauthorized, user belum login
+        "404":
+          description: User tidak ditemukan
+        "500":
+          description: Internal server error
+
+  /api/v1/search:
+    get:
+      tags:
+        - Search
+      summary: Search user
+      description: Cari user berdasarkan fullname atau username (maksimal 7 hasil, exclude user yang sedang login).
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: keyword
+          required: true
+          schema:
+            type: string
+          description: Kata kunci pencarian (fullname atau username).
+      responses:
+        "200":
+          description: Daftar user yang cocok dengan keyword
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "user-123"
+                        username:
+                          type: string
+                          example: "johndoe"
+                        full_name:
+                          type: string
+                          example: "John Doe"
+                        profile_picture:
+                          type: string
+                          nullable: true
+                          example: "/uploads/profile/johndoe.png"
+                        isFollowing:
+                          type: boolean
+                          example: false
+        "400":
+          description: Query parameter keyword tidak diberikan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 400
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: Keyword is required
+        "500":
+          description: Kesalahan server
+
+  /api/v1/search/suggested:
+    get:
+      tags:
+        - Search
+      summary: Get suggested users
+      description: Show 3 maximum suggested not followed user
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Daftar user yang disarankan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "user-456"
+                        full_name:
+                          type: string
+                          example: "Jane Doe"
+                        username:
+                          type: string
+                          example: "janedoe"
+                        photo_profile:
+                          type: string
+                          nullable: true
+                          example: "/uploads/profile/janedoe.png"
+        "401":
+          description: Unauthorized, user belum login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unauthorized
+        "500":
+          description: Kesalahan server
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+
+  /api/v1/search/{username}:
+    get:
+      tags:
+        - Search
+      summary: Get user profile by username
+      description: Get profile user
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: Username dari user yang ingin dicari
+          example: monster
+      responses:
+        "200":
+          description: Detail user yang ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "user-789"
+                      email:
+                        type: string
+                        example: "monster@gmail.com"
+                      username:
+                        type: string
+                        example: "monster"
+                      full_name:
+                        type: string
+                        example: "Monster Hunter"
+                      bio:
+                        type: string
+                        nullable: true
+                        example: "Just a monster slayer"
+                      photo_profile:
+                        type: string
+                        nullable: true
+                        example: "/uploads/profile/monster.png"
+                      backgroundPhoto:
+                        type: string
+                        nullable: true
+                        example: "/uploads/background/monster-bg.jpg"
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: "2025-09-24T15:20:30.000Z"
+                      followers_count:
+                        type: integer
+                        example: 100
+                      following_count:
+                        type: integer
+                        example: 50
+        "400":
+          description: Username tidak diberikan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Username is required
+        "404":
+          description: User tidak ditemukan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found
+        "500":
+          description: Kesalahan server
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
